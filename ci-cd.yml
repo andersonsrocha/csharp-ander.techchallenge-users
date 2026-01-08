@@ -79,38 +79,23 @@ stages:
               tags: $(tag)
 
   - stage: Deploy
-    displayName: "Implantar aplicação"
+    displayName: Setup kubectl
     dependsOn: Docker
     condition: succeeded()
     jobs:
-      - deployment: Deploy
-        displayName: "Implantar em ambiente de produção"
-        environment: "Production"
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - task: AzureContainerApps@1
-                  inputs:
-                    azureSubscription: "Assinatura para estudantes(07de936b-e0c8-47b8-b15f-3d778712ecb6)"
-                    location: "$(location)"
-                    imageToDeploy: "$(acrLoginServer)/$(acrName):$(tag)"
-                    containerAppName: "$(appName)"
-                    resourceGroup: "$(resourceGroup)"
-                    targetPort: "8080"
-                    containerAppEnvironment: |
-                      ConnectionStrings__TechDb="$(connectionString)"
-                      Jwt__Issuer="https://$(appName).delightfulbush-724e4803.eastus.azurecontainerapps.io/"
-                      Jwt__Audience="https://$(appName).delightfulbush-724e4803.eastus.azurecontainerapps.io/"
-                      Jwt__Key="$(jwtKey)"
-                      Microservices__GameUrl="https://$(appName).delightfulbush-724e4803.eastus.azurecontainerapps.io/"
-                      Microservices__UserUrl="https://$(appName).delightfulbush-724e4803.eastus.azurecontainerapps.io/"
-                      Credentials__Email="$(adminEmail)"
-                      Credentials__Password="$(adminPassword)"
-                      ElasticSettings__ApiKey="$(elasticApiKey)"
-                      ElasticSettings__CloudId="$(elasticCloudId)"
-                      NEW_RELIC_LICENSE_KEY="$(nrKey)"
-                  displayName: "Deploy Container App"
+      - job: Kubectl
+        steps:
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'K8S'
+              command: 
+              secretType: 'dockerRegistry'
+              containerRegistryType: 'Azure Container Registry'
+          - script: kubetcl apply -f $(Build.SourcesDirectory)/manifests/config-map.yaml
+          - script: kubetcl apply -f $(Build.SourcesDirectory)/manifests/deployment.yaml
+          - script: kubetcl apply -f $(Build.SourcesDirectory)/manifests/service.yaml
+          - script: kubetcl apply -f $(Build.SourcesDirectory)/manifests/hpa.yaml
 
   - stage: Infraestructure
     displayName: "Implantar Infraestrutura New Relic"
