@@ -58,10 +58,12 @@ stages:
             condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
             inputs:
               containerRegistry: "$(dockerRegistryServiceConnection)"
-              repository: "$(acrName)"
+              repository: "$(imageName)"
               command: "build"
               Dockerfile: "$(dockerfilePath)"
-              tags: "$(tag)"
+              tags: |
+                $(tag)
+                latest
 
           - task: Docker@2
             displayName: Login no ACR
@@ -74,9 +76,11 @@ stages:
             condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
             inputs:
               containerRegistry: "$(dockerRegistryServiceConnection)"
-              repository: "$(acrName)"
+              repository: "$(imageName)"
               command: "push"
-              tags: $(tag)
+              tags: |
+                $(tag)
+                latest
 
   # - stage: Deploy
   #   displayName: "Implantar aplicação"
