@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users
+  template:
+    metadata:
+      labels:
+        app: users
+    spec:
+      containers:
+        - name: users-container
+          image: acr96.azurecr.io/users:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          env:
+            - name: Jwt__Issuer
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: JWT_ISSUER
+            - name: Jwt__Audience
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: JWT_AUDIENCE
+            - name: Microservices__GameUrl
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: GAME_URL
+            - name: Microservices__UserUrl
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: USER_URL
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: users-config
+                  key: ENVIRONMENT
+
+            - name: ConnectionStrings__TechDb
+              valueFrom:
+                secretKeyRef:
+                  name: users-secrets
+                  key: connectionstring
+            - name: Jwt__Key
+              valueFrom:
+                secretKeyRef:
+                  name: users-secrets
+                  key: jwtkey
+            - name: Credentials__Email
+              valueFrom:
+                secretKeyRef:
+                  name: users-secrets
+                  key: adminemail
+            - name: Credentials__Password
+              valueFrom:
+                secretKeyRef:
+                  name: users-secrets
+                  key: adminpassword
+            - name: ElasticSettings__ApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: users-secrets
+                  key: elasticapikey
+            - name: ElasticSettings__CloudId
+              valueFrom:
+                secretKeyRef:
+                  name: users-secrets
+                  key: elasticcloudid
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: users-secrets
+                  key: newrelickey
+      imagePullSecrets:
+        - name: credentials

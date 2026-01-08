@@ -1,10 +1,8 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 
-# Copiar o arquivo da solução
+# Copiar arquivos de projeto para melhor cache do Docker
 COPY TechChallengeUsers.sln ./
-
-# Copy project files
 COPY src/TechChallengeUsers.Api/TechChallengeUsers.Api.csproj src/TechChallengeUsers.Api/
 COPY src/TechChallengeUsers.Application/TechChallengeUsers.Application.csproj src/TechChallengeUsers.Application/
 COPY src/TechChallengeUsers.Data/TechChallengeUsers.Data.csproj src/TechChallengeUsers.Data/
@@ -20,35 +18,29 @@ RUN dotnet restore
 COPY src/ src/
 COPY tests/ tests/
 
-# Construir o projeto
-RUN dotnet build -c Release --no-restore
-
 # Publicar o projeto
 RUN dotnet publish src/TechChallengeUsers.Api/TechChallengeUsers.Api.csproj -c Release -o /app/publish --no-restore
 
-# Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# Runtime stage - usando Alpine para imagem mais leve
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
 
-# Install the agent
-RUN apt-get update && apt-get install -y wget ca-certificates gnupg \
-&& echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list \
-&& wget https://download.newrelic.com/548C16BF.gpg \
-&& apt-key add 548C16BF.gpg \
-&& apt-get update \
-&& apt-get install -y 'newrelic-dotnet-agent' \
-&& rm -rf /var/lib/apt/lists/*
+# Instalar New Relic
+RUN apk update && apk add --no-cache wget tar \
+    && wget https://download.newrelic.com/dot_net_agent/latest_release/newrelic-dotnet-agent_amd64.tar.gz -r \
+    && tar -xzf download.newrelic.com/dot_net_agent/latest_release/newrelic-dotnet-agent_amd64.tar.gz -C /usr/local \ 
+    && rm -rf download.newrelic.com
 
-# Enable the agent
+# Configurações New Relic
 ENV CORECLR_ENABLE_PROFILING=1 \
-CORECLR_PROFILER={36032161-FFC0-4B61-B559-F6C5D41BAE5A} \
-CORECLR_NEWRELIC_HOME=/usr/local/newrelic-dotnet-agent \
-CORECLR_PROFILER_PATH=/usr/local/newrelic-dotnet-agent/libNewRelicProfiler.so \
-NEW_RELIC_APP_NAME="techchallenge-users-newrelic"
+    CORECLR_PROFILER={36032161-FFC0-4B61-B559-F6C5D41BAE5A} \
+    CORECLR_NEWRELIC_HOME=/usr/local/newrelic-dotnet-agent \
+    CORECLR_PROFILER_PATH=/usr/local/newrelic-dotnet-agent/libNewRelicProfiler.so \
+    NEW_RELIC_APP_NAME="techchallenge-users-newrelic"
 
 WORKDIR /app
 
-# Criar non-root user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Criar non-root user (Alpine Linux)
+RUN addgroup -S appuser && adduser -S appuser -G appuser
 
 # Copiar os arquivos publicados
 COPY --from=build /app/publish .

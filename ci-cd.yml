@@ -78,6 +78,28 @@ stages:
               command: "push"
               tags: $(tag)
 
+  # - stage: Deploy
+  #   displayName: "Implantar aplicação"
+  #   dependsOn: Docker
+  #   condition: succeeded()
+  #   jobs:
+  #     - deployment: Deploy
+  #       displayName: "Implantar em ambiente de produção"
+  #       environment: "Production"
+  #       strategy:
+  #         runOnce:
+  #           deploy:
+  #             steps:
+  #               - task: AzureContainerApps@1
+  #                 inputs:
+  #                   azureSubscription: "Assinatura para estudantes(07de936b-e0c8-47b8-b15f-3d778712ecb6)"
+  #                   location: "$(location)"
+  #                   imageToDeploy: "$(acrLoginServer)/$(imageName):$(tag)"
+  #                   containerAppName: "$(appName)"
+  #                   resourceGroup: "$(resourceGroup)"
+  #                   targetPort: "8080"
+  #                 displayName: "Deploy Container App"
+
   - stage: Deploy
     displayName: Setup kubectl
     dependsOn: Docker
@@ -87,11 +109,11 @@ stages:
         steps:
           - task: Kubernetes@1
             inputs:
-              connectionType: 'Kubernetes Service Connection'
-              kubernetesServiceEndpoint: 'K8S'
-              command: 
-              secretType: 'dockerRegistry'
-              containerRegistryType: 'Azure Container Registry'
+              connectionType: "Kubernetes Service Connection"
+              kubernetesServiceEndpoint: "K8S"
+              command:
+              secretType: "dockerRegistry"
+              containerRegistryType: "Azure Container Registry"
           - script: kubetcl apply -f $(Build.SourcesDirectory)/manifests/config-map.yaml
           - script: kubetcl apply -f $(Build.SourcesDirectory)/manifests/deployment.yaml
           - script: kubetcl apply -f $(Build.SourcesDirectory)/manifests/service.yaml
