@@ -101,7 +101,7 @@ stages:
   #                 displayName: "Deploy Container App"
 
   - stage: Deploy
-    displayName: Setup kubectl
+    displayName: Setup yamls do kubernetes
     dependsOn: Docker
     condition: succeeded()
     jobs:
@@ -109,15 +109,40 @@ stages:
         steps:
           - task: Kubernetes@1
             inputs:
-              connectionType: "Kubernetes Service Connection"
-              kubernetesServiceEndpoint: "K8S"
-              command:
-              secretType: "dockerRegistry"
-              containerRegistryType: "Azure Container Registry"
-          - script: kubetcl apply -f $(Build.SourcesDirectory)/manifests/config-map.yaml
-          - script: kubetcl apply -f $(Build.SourcesDirectory)/manifests/deployment.yaml
-          - script: kubetcl apply -f $(Build.SourcesDirectory)/manifests/service.yaml
-          - script: kubetcl apply -f $(Build.SourcesDirectory)/manifests/hpa.yaml
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'K8S'
+              command: 'apply'
+              useConfigurationFile: true
+              configuration: '$(Build.SourcesDirectory)/manifests/config-map.yaml'
+              secretType: 'dockerRegistry'
+              containerRegistryType: 'Azure Container Registry'
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'K8S'
+              command: 'apply'
+              useConfigurationFile: true
+              configuration: '$(Build.SourcesDirectory)/manifests/deployment.yaml'
+              secretType: 'dockerRegistry'
+              containerRegistryType: 'Azure Container Registry'
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'K8S'
+              command: 'apply'
+              useConfigurationFile: true
+              configuration: '$(Build.SourcesDirectory)/manifests/service.yaml'
+              secretType: 'dockerRegistry'
+              containerRegistryType: 'Azure Container Registry'
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'K8S'
+              command: 'apply'
+              useConfigurationFile: true
+              configuration: '$(Build.SourcesDirectory)/manifests/hpa.yaml'
+              secretType: 'dockerRegistry'
+              containerRegistryType: 'Azure Container Registry'
 
   - stage: Infraestructure
     displayName: "Implantar Infraestrutura New Relic"
