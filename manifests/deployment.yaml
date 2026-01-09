@@ -25,6 +25,10 @@ spec:
               memory: "256Mi"
               cpu: "150m"
           env:
+            - name: RabbitMQ__HostName
+              value: "rabbitmq.messaging.svc.cluster.local"
+            - name: RabbitMQ__QueueName
+              value: "payments"
             - name: Jwt__Issuer
               valueFrom:
                 configMapKeyRef:
@@ -86,5 +90,15 @@ spec:
                 secretKeyRef:
                   name: users-secrets
                   key: newrelickey
+            - name: RabbitMQ__UserName
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-secrets
+                  key: username
+            - name: RabbitMQ__Password
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-secrets
+                  key: password
       imagePullSecrets:
         - name: credentials

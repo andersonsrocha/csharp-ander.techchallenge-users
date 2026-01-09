@@ -5,7 +5,5 @@ metadata:
 data:
   JWT_ISSUER: https://userapi.delightfulbush-724e4803.eastus.azurecontainerapps.io/
   JWT_AUDIENCE: https://userapi.delightfulbush-724e4803.eastus.azurecontainerapps.io/
-  GAME_URL: https://gameapi.delightfulbush-724e4803.eastus.azurecontainerapps.io/
-  USER_URL: https://userapi.delightfulbush-724e4803.eastus.azurecontainerapps.io/
   ELASTIC_CLOUD_ID: My_Elasticsearch_project:ZWFzdHVzLmF6dXJlLmVsYXN0aWMuY2xvdWQkYjczMmVjMzI5YWY3NGUyZGI0ZGZhODNmMjM4M2RmZjguZXMkYjczMmVjMzI5YWY3NGUyZGI0ZGZhODNmMjM4M2RmZjgua2I=
   ENVIRONMENT: Production
