@@ -39,16 +39,6 @@ spec:
                 configMapKeyRef:
                   name: users-config
                   key: JWT_AUDIENCE
-            - name: Microservices__GameUrl
-              valueFrom:
-                configMapKeyRef:
-                  name: users-config
-                  key: GAME_URL
-            - name: Microservices__UserUrl
-              valueFrom:
-                configMapKeyRef:
-                  name: users-config
-                  key: USER_URL
             - name: ENVIRONMENT
               valueFrom:
                 configMapKeyRef:
@@ -65,16 +55,6 @@ spec:
                 secretKeyRef:
                   name: users-secrets
                   key: jwtkey
-            - name: Credentials__Email
-              valueFrom:
-                secretKeyRef:
-                  name: users-secrets
-                  key: adminemail
-            - name: Credentials__Password
-              valueFrom:
-                secretKeyRef:
-                  name: users-secrets
-                  key: adminpassword
             - name: ElasticSettings__ApiKey
               valueFrom:
                 secretKeyRef:
